@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Real Airplane Typing Challenge ✈️</title>
+<title>Typing Flight Challenge ✈️</title>
 
 <style>
 body{
@@ -18,17 +18,19 @@ h1{margin:10px;}
 
 #gameArea{
     position:relative;
-    height:45vh;
+    width:100%;
+    height:50vh;
     border-top:3px solid black;
     border-bottom:3px solid black;
     overflow:hidden;
+    background:linear-gradient(to bottom,#4da6ff,#87CEEB);
 }
 
 .runway{
     position:absolute;
     bottom:0;
     width:200%;
-    height:80px;
+    height:100px;
     background:repeating-linear-gradient(
         to right,
         #555 0px,
@@ -48,7 +50,7 @@ h1{margin:10px;}
     position:absolute;
     top:40%;
     left:10%;
-    width:130px;
+    width:120px;
     transition:0.2s;
 }
 
@@ -56,7 +58,7 @@ h1{margin:10px;}
     width:80%;
     margin:15px auto;
     font-size:18px;
-    height:150px;
+    height:120px;
     overflow:auto;
     border:1px solid #ccc;
     padding:10px;
@@ -69,25 +71,26 @@ h1{margin:10px;}
     font-size:18px;
 }
 
-#message{
-    font-size:22px;
-    color:red;
-    margin-top:10px;
-}
-
 .stats{
     margin:5px;
+    font-size:18px;
+}
+
+#message{
+    font-size:24px;
+    margin-top:10px;
+    font-weight:bold;
 }
 </style>
 </head>
 
 <body>
 
-<h1>✈️ Real Airplane Typing Challenge</h1>
+<h1>✈️ Typing Flight Challenge</h1>
 
-<div class="stats">Time: <span id="time">0</span> seconds</div>
-<div class="stats">Best Record: <span id="bestTime">--</span></div>
 <div class="stats">Level: <span id="level">1</span></div>
+<div class="stats">Time: <span id="timer">0</span> seconds</div>
+<div class="stats">Best Record: <span id="bestTime">None</span></div>
 
 <div id="gameArea">
     <div class="runway"></div>
@@ -95,104 +98,101 @@ h1{margin:10px;}
 </div>
 
 <div id="paragraph"></div>
-<input type="text" id="inputBox" placeholder="Start typing here...">
+<input type="text" id="inputBox" placeholder="Start typing to fly...">
 
 <div id="message"></div>
 
 <script>
 const paragraphs = [
-`A modern airplane is one of the greatest inventions in human history... (LEVEL 1 150+ WORD PARAGRAPH)`
-,
-`Flying across international skies requires advanced navigation systems... (LEVEL 2 HARDER 150+ WORD PARAGRAPH)`
-,
-`A commercial aircraft operates through a complex system of aerodynamics... (LEVEL 3 VERY HARD 150+ WORD PARAGRAPH)`
+`A commercial airplane prepares for departure as passengers settle into their seats and the engines begin to hum steadily. The pilot communicates with the control tower while ground staff guide the aircraft toward the runway. The sky is clear and the weather conditions are ideal for takeoff. As the plane accelerates, the powerful engines generate enough thrust to lift the massive aircraft into the air. The wheels leave the runway smoothly and the city below becomes smaller with every passing second. The aircraft climbs higher and begins its journey across distant landscapes, oceans, and mountains while maintaining stability and direction.`,
+
+`Modern aviation technology has transformed air travel into one of the safest and fastest transportation systems in the world. Pilots rely on advanced navigation systems, radar communication, and automated flight controls to ensure a smooth journey. Turbulence may occasionally shake the cabin, but experienced crew members handle every situation with professionalism and calmness. During long flights, passengers enjoy comfort while the aircraft maintains altitude and speed through changing atmospheric conditions. The coordination between pilots, engineers, and air traffic controllers ensures that every landing is executed with precision and accuracy at the final destination airport.`,
+
+`International air travel connects continents and cultures, allowing millions of people to explore new destinations every day. Aircraft design focuses on aerodynamics, fuel efficiency, and passenger safety to meet global aviation standards. Engineers continuously innovate to improve engine performance and reduce environmental impact. From takeoff to cruising altitude and final descent, every phase of flight requires careful monitoring and precise timing. As the aircraft approaches the runway, the landing gear deploys and the engines gradually reduce thrust, guiding the plane toward a safe and controlled landing experience for everyone onboard.`
 ];
 
-let level=0;
+let level = 0;
 let startTime;
 let timerInterval;
-let lastTypedTime;
-let bestTime=localStorage.getItem("bestTime");
+let inactivityTimer;
+let bestRecord = localStorage.getItem("bestFlightTime");
 
-if(bestTime){
-    document.getElementById("bestTime").textContent=bestTime+" sec";
+if(bestRecord){
+    document.getElementById("bestTime").textContent = bestRecord + " sec";
 }
 
-const paragraphDisplay=document.getElementById("paragraph");
-const inputBox=document.getElementById("inputBox");
-const message=document.getElementById("message");
-const plane=document.getElementById("plane");
+const paragraphDisplay = document.getElementById("paragraph");
+const inputBox = document.getElementById("inputBox");
+const plane = document.getElementById("plane");
+const message = document.getElementById("message");
 
 function startLevel(){
-    paragraphDisplay.textContent=paragraphs[level];
-    inputBox.value="";
-    document.getElementById("level").textContent=level+1;
+    paragraphDisplay.textContent = paragraphs[level];
+    inputBox.value = "";
 }
 
-function startTimer(){
-    startTime=Date.now();
-    timerInterval=setInterval(()=>{
-        let currentTime=Math.floor((Date.now()-startTime)/1000);
-        document.getElementById("time").textContent=currentTime;
+function startGame(){
+    startTime = Date.now();
+    timerInterval = setInterval(()=>{
+        let currentTime = Math.floor((Date.now() - startTime)/1000);
+        document.getElementById("timer").textContent = currentTime;
     },1000);
 }
 
-function crashPlane(){
-    plane.style.top="70%";
-    message.textContent="You're Out! ✈️💥";
+function resetInactivity(){
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(()=>{
+        crash();
+    },3000);
+}
+
+function crash(){
+    message.textContent = "💥 You're Out!";
+    inputBox.disabled = true;
     clearInterval(timerInterval);
-    inputBox.disabled=true;
 }
 
-function checkIdle(){
-    if(Date.now()-lastTypedTime > 3000){
-        crashPlane();
+function completeGame(){
+    clearInterval(timerInterval);
+    let totalTime = Math.floor((Date.now() - startTime)/1000);
+
+    if(!bestRecord || totalTime < bestRecord){
+        localStorage.setItem("bestFlightTime", totalTime);
+        message.textContent = "🎉 Congratulations! You Set a New Record in " + totalTime + " seconds!";
+    } else {
+        message.textContent = "Flight Completed in " + totalTime + " seconds.";
     }
-}
 
-setInterval(checkIdle,500);
+    inputBox.disabled = true;
+}
 
 inputBox.addEventListener("input",()=>{
-    if(!startTime){
-        startTimer();
+    if(level === 0 && !startTime){
+        startGame();
     }
 
-    lastTypedTime=Date.now();
+    resetInactivity();
 
-    let typed=inputBox.value;
-    let original=paragraphs[level];
+    let typed = inputBox.value;
+    let currentText = paragraphs[level];
 
-    if(!original.startsWith(typed)){
-        crashPlane();
+    if(!currentText.startsWith(typed)){
+        crash();
         return;
     }
 
-    plane.style.left=(10+(typed.length/original.length)*70)+"%";
+    plane.style.left = (10 + (typed.length/currentText.length)*70) + "%";
 
-    if(typed===original){
+    if(typed === currentText){
         level++;
-        if(level<paragraphs.length){
+        if(level < paragraphs.length){
+            document.getElementById("level").textContent = level + 1;
             startLevel();
-        }else{
-            finishGame();
+        } else {
+            completeGame();
         }
     }
 });
-
-function finishGame(){
-    clearInterval(timerInterval);
-    let totalTime=Math.floor((Date.now()-startTime)/1000);
-    inputBox.disabled=true;
-
-    if(!bestTime || totalTime < bestTime){
-        localStorage.setItem("bestTime",totalTime);
-        message.style.color="green";
-        message.textContent="🎉 Congratulations! You set a NEW RECORD in "+totalTime+" seconds!";
-    }else{
-        message.style.color="blue";
-        message.textContent="Game Completed in "+totalTime+" seconds. Try again to beat record!";
-    }
-}
 
 startLevel();
 </script>
