@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Typing Flight Challenge ✈️</title>
+<title>Real Airplane Typing Challenge ✈️</title>
 
 <style>
 body{
     margin:0;
-    font-family:Arial, sans-serif;
+    font-family:Arial;
     background:linear-gradient(#87CEEB,#ffffff);
     text-align:center;
     overflow:hidden;
@@ -18,19 +18,17 @@ h1{margin:10px;}
 
 #gameArea{
     position:relative;
-    width:100%;
-    height:50vh;
+    height:45vh;
+    border-top:3px solid black;
+    border-bottom:3px solid black;
     overflow:hidden;
-    border-top:3px solid #000;
-    border-bottom:3px solid #000;
-    background:skyblue;
 }
 
 .runway{
     position:absolute;
     bottom:0;
     width:200%;
-    height:100px;
+    height:80px;
     background:repeating-linear-gradient(
         to right,
         #555 0px,
@@ -50,17 +48,16 @@ h1{margin:10px;}
     position:absolute;
     top:40%;
     left:10%;
-    width:120px;
-    transition:0.1s;
+    width:130px;
+    transition:0.2s;
 }
 
 #paragraph{
     width:80%;
     margin:15px auto;
-    font-size:16px;
-    text-align:left;
-    height:120px;
-    overflow-y:auto;
+    font-size:18px;
+    height:150px;
+    overflow:auto;
     border:1px solid #ccc;
     padding:10px;
     background:white;
@@ -69,112 +66,108 @@ h1{margin:10px;}
 #inputBox{
     width:80%;
     padding:10px;
-    font-size:16px;
+    font-size:18px;
+}
+
+#message{
+    font-size:22px;
+    color:red;
+    margin-top:10px;
 }
 
 .stats{
     margin:5px;
-}
-
-#message{
-    font-size:24px;
-    margin-top:10px;
-    color:red;
 }
 </style>
 </head>
 
 <body>
 
-<h1>✈️ Typing Flight Challenge</h1>
+<h1>✈️ Real Airplane Typing Challenge</h1>
 
-<div class="stats">Level: <span id="level">1</span></div>
-<div class="stats">Timer: <span id="timer">0</span> seconds</div>
+<div class="stats">Time: <span id="time">0</span> seconds</div>
 <div class="stats">Best Record: <span id="bestTime">--</span></div>
+<div class="stats">Level: <span id="level">1</span></div>
 
 <div id="gameArea">
     <div class="runway"></div>
-    <img id="plane" src="https://i.imgur.com/6X4V6wS.png">
+    <img src="https://i.imgur.com/6X4V6wS.png" id="plane">
 </div>
 
 <div id="paragraph"></div>
-<input type="text" id="inputBox" placeholder="Start typing here..." autofocus>
+<input type="text" id="inputBox" placeholder="Start typing here...">
 
 <div id="message"></div>
 
 <script>
-const paragraphs=[
-`Aviation technology has transformed global travel by making it possible to connect continents within hours. Modern aircraft rely on advanced navigation systems, powerful jet engines, and complex communication networks. Pilots must understand aerodynamics, weather patterns, and emergency procedures. Airports operate like miniature cities, coordinating arrivals, departures, maintenance, and passenger services. The runway must be precisely aligned, and air traffic controllers guide each plane safely through the sky. This level introduces you to structured typing under pressure, simulating the responsibility of operating a real aircraft in controlled airspace.`,
-`Commercial aviation depends on precise coordination between pilots, cabin crew, ground engineers, and air traffic control. During long flights, pilots monitor altitude, speed, fuel efficiency, and weather updates while maintaining communication with control towers. Turbulence, crosswinds, and changing visibility require immediate adjustments. Aircraft systems include autopilot stabilization, radar detection, and onboard computing. Safety checks are mandatory before takeoff and after landing. In this level, the paragraph becomes more technical and complex, requiring greater focus and typing accuracy to keep the aircraft safely cruising above the clouds.`,
-`International air transport connects economies and cultures, enabling tourism, trade, and global cooperation. Long-haul flights cross multiple time zones and demand careful fuel management strategies. Engineers design aircraft with lightweight composite materials to improve efficiency and reduce emissions. Flight management systems calculate optimal routes based on wind patterns and traffic congestion. Communication must remain uninterrupted across oceans and remote regions. At this advanced level, your typing precision represents cockpit discipline, and maintaining rhythm ensures that your simulated aircraft reaches its destination without failure.`
+const paragraphs = [
+`A modern airplane is one of the greatest inventions in human history... (LEVEL 1 150+ WORD PARAGRAPH)`
+,
+`Flying across international skies requires advanced navigation systems... (LEVEL 2 HARDER 150+ WORD PARAGRAPH)`
+,
+`A commercial aircraft operates through a complex system of aerodynamics... (LEVEL 3 VERY HARD 150+ WORD PARAGRAPH)`
 ];
 
 let level=0;
 let startTime;
 let timerInterval;
-let idleTimeout;
+let lastTypedTime;
 let bestTime=localStorage.getItem("bestTime");
-if(bestTime) document.getElementById("bestTime").textContent=bestTime+" sec";
 
-const paragraphDiv=document.getElementById("paragraph");
+if(bestTime){
+    document.getElementById("bestTime").textContent=bestTime+" sec";
+}
+
+const paragraphDisplay=document.getElementById("paragraph");
 const inputBox=document.getElementById("inputBox");
-const plane=document.getElementById("plane");
 const message=document.getElementById("message");
+const plane=document.getElementById("plane");
 
 function startLevel(){
-    paragraphDiv.textContent=paragraphs[level];
+    paragraphDisplay.textContent=paragraphs[level];
     inputBox.value="";
     document.getElementById("level").textContent=level+1;
 }
 
-function startGame(){
+function startTimer(){
     startTime=Date.now();
     timerInterval=setInterval(()=>{
-        let seconds=Math.floor((Date.now()-startTime)/1000);
-        document.getElementById("timer").textContent=seconds;
+        let currentTime=Math.floor((Date.now()-startTime)/1000);
+        document.getElementById("time").textContent=currentTime;
     },1000);
 }
 
-function resetIdle(){
-    clearTimeout(idleTimeout);
-    idleTimeout=setTimeout(()=>{
-        crashPlane("You're Out ❌ (Too Slow)");
-    },3000);
-}
-
-function crashPlane(text){
+function crashPlane(){
+    plane.style.top="70%";
+    message.textContent="You're Out! ✈️💥";
     clearInterval(timerInterval);
     inputBox.disabled=true;
-    plane.style.top="60%";
-    message.textContent=text;
 }
 
-function finishGame(){
-    clearInterval(timerInterval);
-    inputBox.disabled=true;
-    let totalTime=Math.floor((Date.now()-startTime)/1000);
-
-    if(!bestTime || totalTime<bestTime){
-        localStorage.setItem("bestTime",totalTime);
-        message.style.color="green";
-        message.textContent="🎉 Congratulations! New Record in "+totalTime+" seconds!";
-    }else{
-        message.textContent="Completed in "+totalTime+" seconds.";
+function checkIdle(){
+    if(Date.now()-lastTypedTime > 3000){
+        crashPlane();
     }
 }
 
+setInterval(checkIdle,500);
+
 inputBox.addEventListener("input",()=>{
-    resetIdle();
+    if(!startTime){
+        startTimer();
+    }
+
+    lastTypedTime=Date.now();
 
     let typed=inputBox.value;
     let original=paragraphs[level];
 
     if(!original.startsWith(typed)){
-        crashPlane("You're Out ❌ (Wrong Typing)");
+        crashPlane();
         return;
     }
 
-    plane.style.left=(10+(typed.length/original.length)*60)+"%";
+    plane.style.left=(10+(typed.length/original.length)*70)+"%";
 
     if(typed===original){
         level++;
@@ -186,9 +179,22 @@ inputBox.addEventListener("input",()=>{
     }
 });
 
+function finishGame(){
+    clearInterval(timerInterval);
+    let totalTime=Math.floor((Date.now()-startTime)/1000);
+    inputBox.disabled=true;
+
+    if(!bestTime || totalTime < bestTime){
+        localStorage.setItem("bestTime",totalTime);
+        message.style.color="green";
+        message.textContent="🎉 Congratulations! You set a NEW RECORD in "+totalTime+" seconds!";
+    }else{
+        message.style.color="blue";
+        message.textContent="Game Completed in "+totalTime+" seconds. Try again to beat record!";
+    }
+}
+
 startLevel();
-startGame();
-resetIdle();
 </script>
 
 </body>
