@@ -3,212 +3,136 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Typing Aeroplane Pro ✈️</title>
+<title>Typing Aeroplane Game ✈️</title>
 
 <style>
-body{
-    margin:0;
-    font-family:Arial, sans-serif;
-    background:linear-gradient(#87CEEB,#ffffff);
-    overflow:hidden;
-    text-align:center;
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to top, #87CEEB, #ffffff);
+    overflow: hidden;
+    text-align: center;
 }
 
-h1{margin:10px;}
-
-#gameArea{
-    position:relative;
-    width:100%;
-    height:60vh;
-    overflow:hidden;
-    border-top:3px solid #000;
-    border-bottom:3px solid #000;
-    background:#4da6ff;
+h1 {
+    margin-top: 10px;
 }
 
-.runway{
-    position:absolute;
-    bottom:0;
-    width:200%;
-    height:100px;
-    background:repeating-linear-gradient(
-        to right,
-        #555 0px,
-        #555 40px,
-        white 40px,
-        white 80px
-    );
-    animation:runwayMove 2s linear infinite;
+#gameArea {
+    position: relative;
+    width: 100%;
+    height: 70vh;
+    border-top: 3px solid #333;
+    border-bottom: 3px solid #333;
+    background: url('https://i.imgur.com/9aX2K5X.png') repeat-x bottom;
+    background-size: contain;
 }
 
-@keyframes runwayMove{
-    from{transform:translateX(0);}
-    to{transform:translateX(-50%);}
+#plane {
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    font-size: 50px;
+    transition: transform 0.1s linear;
 }
 
-#plane{
-    position:absolute;
-    top:40%;
-    left:10%;
-    width:120px;
-    transition:0.1s;
+#word {
+    font-size: 28px;
+    margin-top: 20px;
 }
 
-#word{
-    font-size:28px;
-    margin-top:15px;
+#inputBox {
+    padding: 10px;
+    font-size: 20px;
+    width: 300px;
 }
 
-#inputBox{
-    padding:10px;
-    font-size:20px;
-    width:300px;
+#score, #level {
+    font-size: 20px;
+    margin: 10px;
 }
 
-.stats{
-    font-size:18px;
-    margin:5px;
-}
-
-#speedBar{
-    width:200px;
-    height:20px;
-    border:1px solid black;
-    margin:10px auto;
-}
-
-#speedFill{
-    height:100%;
-    width:0%;
-    background:green;
-}
-
-#gameOver{
-    font-size:30px;
-    color:red;
-    display:none;
-}
-
-button{
-    padding:8px 15px;
-    font-size:16px;
-    margin-top:10px;
+#gameOver {
+    color: red;
+    font-size: 30px;
+    display: none;
 }
 </style>
 </head>
 
 <body>
 
-<h1>✈️ Typing Aeroplane Pro</h1>
+<h1>✈️ Typing Aeroplane Game</h1>
 
-<div class="stats">Score: <span id="score">0</span></div>
-<div class="stats">Level: <span id="level">1</span></div>
-<div class="stats">Time: <span id="timer">60</span>s</div>
-<div class="stats">High Score: <span id="highScore">0</span></div>
-
-<div id="speedBar"><div id="speedFill"></div></div>
+<div id="score">Score: 0</div>
+<div id="level">Level: 1</div>
 
 <div id="gameArea">
-    <div class="runway"></div>
-    <img id="plane" src="https://i.imgur.com/6X4V6wS.png">
+    <div id="plane">✈️</div>
 </div>
 
 <div id="word"></div>
-<input type="text" id="inputBox" autofocus placeholder="Type here...">
+<input type="text" id="inputBox" autofocus placeholder="Type here..." />
 
 <div id="gameOver">GAME OVER ❌</div>
-<button onclick="restartGame()">Restart</button>
-
-<audio id="engineSound" loop>
-<source src="https://www.soundjay.com/transportation/airplane-01.mp3">
-</audio>
-
-<audio id="crashSound">
-<source src="https://www.soundjay.com/mechanical/smash-crash-01.mp3">
-</audio>
 
 <script>
-const words = [
-"sky","airport","navigation","runway","flight",
-"cockpit","international","boarding","transportation",
-"aerodynamics","communication","destination"
-];
+const words = {
+    1: ["sky", "fly", "air", "jet", "cloud"],
+    2: ["airport", "travel", "engine", "flight", "landing"],
+    3: ["navigation", "runway", "cockpit", "altitude", "boarding"],
+    4: ["international", "aerodynamics", "transportation", "communication"]
+};
 
-let score=0;
-let level=1;
-let time=60;
-let currentWord="";
-let highScore=localStorage.getItem("highScore")||0;
+let level = 1;
+let score = 0;
+let currentWord = "";
+let plane = document.getElementById("plane");
+let wordDisplay = document.getElementById("word");
+let inputBox = document.getElementById("inputBox");
+let gameOverText = document.getElementById("gameOver");
 
-document.getElementById("highScore").textContent=highScore;
-
-const wordDisplay=document.getElementById("word");
-const inputBox=document.getElementById("inputBox");
-const plane=document.getElementById("plane");
-const speedFill=document.getElementById("speedFill");
-const engineSound=document.getElementById("engineSound");
-const crashSound=document.getElementById("crashSound");
-
-engineSound.play();
-
-function newWord(){
-    currentWord=words[Math.floor(Math.random()*words.length)];
-    wordDisplay.textContent=currentWord;
-    inputBox.value="";
+function newWord() {
+    let wordList = words[level];
+    currentWord = wordList[Math.floor(Math.random() * wordList.length)];
+    wordDisplay.textContent = currentWord;
+    inputBox.value = "";
 }
 
-function updateSpeed(){
-    let speedPercent=Math.min(score*5,100);
-    speedFill.style.width=speedPercent+"%";
-    plane.style.left=(10+score*2)+"%";
+function movePlane(speed) {
+    let currentLeft = parseFloat(plane.style.left) || 10;
+    plane.style.left = (currentLeft + speed) + "%";
 }
 
-function levelUp(){
-    level=Math.floor(score/5)+1;
-    document.getElementById("level").textContent=level;
+function levelUp() {
+    if(score > 5 && level === 1) level = 2;
+    if(score > 10 && level === 2) level = 3;
+    if(score > 18 && level === 3) level = 4;
+
+    document.getElementById("level").textContent = "Level: " + level;
 }
 
-function gameOver(){
-    document.getElementById("gameOver").style.display="block";
-    inputBox.disabled=true;
-    crashSound.play();
-    engineSound.pause();
-
-    if(score>highScore){
-        localStorage.setItem("highScore",score);
-    }
+function gameOver() {
+    inputBox.disabled = true;
+    gameOverText.style.display = "block";
 }
 
-inputBox.addEventListener("input",()=>{
-    let typed=inputBox.value;
+inputBox.addEventListener("input", () => {
+    let typed = inputBox.value;
 
-    if(!currentWord.startsWith(typed)){
+    if(!currentWord.startsWith(typed)) {
         gameOver();
         return;
     }
 
-    if(typed===currentWord){
+    if(typed === currentWord) {
         score++;
-        document.getElementById("score").textContent=score;
-        updateSpeed();
+        document.getElementById("score").textContent = "Score: " + score;
+        movePlane(level * 2);
         levelUp();
         newWord();
     }
 });
-
-function restartGame(){
-    location.reload();
-}
-
-function countdown(){
-    if(time>0){
-        time--;
-        document.getElementById("timer").textContent=time;
-    }else{
-        gameOver();
-    }
-}
-setInterval(countdown,1000);
 
 newWord();
 </script>
